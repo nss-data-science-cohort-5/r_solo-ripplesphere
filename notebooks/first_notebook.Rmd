@@ -5,6 +5,7 @@ output: html_notebook
 
 ```{r}
 library(tidyverse)
+library(ggplot2)
 ```
 1. Read in `districts.csv` into a tibble named `districts`. How many rows and columns does it contain?
 146 rows, 27 columns
@@ -21,7 +22,7 @@ districts <- slice(districts,(2:n()))
 3. How many districts have a proficiency rate of at least 80% for both alg_1 and eng_1?
 13
 ```{r}
-filter(districts, alg_1 >= 80 & eng_1 >= 80)
+filter(districts, alg_1 >= 80 & eng_1 >= 80) %>% count()
 ```
 
 4. How many districts have a proficiency rate less than 50% for either alg_1 or eng_1?
@@ -59,22 +60,77 @@ hist(districts$grad)
 
 
 9. Create a scatter plot to compare alg_1 proficiency rates to alg_2 rates. What do you notice? Facet this plot by region. Does anything stand out when you facet the plots?
+```{r}
+plot(districts$alg_1, districts$alg_2)
+```
+
+```{r}
+ggplot(data = districts, aes(alg_1, alg_2)) +
+  geom_point() +
+  # labs( y = "Rating", x = "Percent") + 
+  facet_grid( ~ region )
+```
 
 10. Create a bar chart showing the total enrollment by region. Which region has the highest total enrollment? Which has the smallest?
+```{r}
+ggplot(districts, aes(region)) +
+  geom_bar(aes(weight = enrollment)) + 
+  theme(axis.text.x = element_text(angle = 30, vjust = 0.5, hjust=1))
+```
 
 11. When creating this bar chart you may have noticed that some districts have missing enrollment values. For how many districts is this the case?
+4
+```{r}
+filter(districts, is.na(districts$enrollment)) %>% count()
+```
+
 
 12. What is the mean graduation rate across all districts? What might be wrong with using just the regular mean to assess average graduation rates?
+90%
+```{r}
+mean(districts$grad, na.rm = TRUE)
+```
 
 13. Redo the previous question but use a weighted average (`weighted.mean`) graduation across all districts, weighing by enrollment. How much does this change your answer? Can you explain using the data the reason for the big change from using the mean?
+87.33%
+```{r}
+enroll_grad <- districts %>% select(enrollment, grad) %>% na.omit()
+weighted.mean(enroll_grad$grad, enroll_grad$enrollment)
+```
+
 
 14. Create a boxplot showing enrollment rates per region. Does anything stand out?
+```{r}
+ggplot(districts, aes(region, enrollment)) +
+  geom_boxplot() +
+  theme(axis.text.x = element_text(angle = 30, vjust = 0.5, hjust=1))
+```
+
 
 15. Create a boxplot showing graduation rates per region. Does anything stand out?
+```{r}
+ggplot(districts, aes(region, grad)) +
+  geom_boxplot() +
+  theme(axis.text.x = element_text(angle = 30, vjust = 0.5, hjust=1))
+```
+
 
 16. Find the weighted average of graduation rates by region using enrollment as weights. Compare the results you get for the weighted average to what you see from the boxplots. Can you explain any discrepancy?
+```{r}
+enroll_region_grad <- districts %>% select(enrollment, region, grad) %>% na.omit()
+enroll_region_grad %>% 
+  group_by(region) %>% 
+  summarise(weighted_grad = weighted.mean(grad, enrollment))
+```
+
 
 17. For many districts, values for `alg_2` are lower than for `alg_1`. Create a histogram showing the distribution of differences (`alg_1` - `alg_2`). Which school had the largest drop from `alg_1` to `alg_2`? For what percentage of schools is it true that `alg_2` is larger than `alg_1`? Is there a similar dropoff for `eng_2` and `eng_3`?
+```{r}
+selected_data <- districts %>% select(alg_1, alg_2) %>% na.omit()
+data <- data.frame(alg_1 = selected_data$alg_1, alg_2 = selected_data$alg_2)
+data$alg_diff <- (data$alg_1 - data$alg_2)
+```
+
 
 18. You may have noticed that a lot of rows are missing values. Which district has the largest number of missing values? What do you notice about schools that have a lot of missing values?
 
