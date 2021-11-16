@@ -126,19 +126,60 @@ enroll_region_grad %>%
 
 17. For many districts, values for `alg_2` are lower than for `alg_1`. Create a histogram showing the distribution of differences (`alg_1` - `alg_2`). Which school had the largest drop from `alg_1` to `alg_2`? For what percentage of schools is it true that `alg_2` is larger than `alg_1`? Is there a similar dropoff for `eng_2` and `eng_3`?
 ```{r}
-selected_data <- districts %>% select(alg_1, alg_2) %>% na.omit()
-data <- data.frame(alg_1 = selected_data$alg_1, alg_2 = selected_data$alg_2)
-data$alg_diff <- (data$alg_1 - data$alg_2)
+q17 <- function(col1, col2) {
+  data <- districts %>% select(all_of("system_name"), all_of(col1), all_of(col2)) %>% 
+    na.omit() %>% data.frame()
+  data$col_diff <- (data[[col1]] - data[[col2]])
+  val1 <- filter(data, data$col_diff == max(data$col_diff))$system_name
+  diff_hist <- ggplot(data, aes(col_diff)) +
+    geom_histogram()
+  val2 <- filter(districts, districts[[col2]] - districts[[col1]] > 0) %>% count() / data %>% count() * 100
+  return(list(val1, val2, diff_hist))
+}
+```
+```{r}
+q17("alg_1", "alg_2")
+q17("eng_2", "eng_3")
 ```
 
 
 18. You may have noticed that a lot of rows are missing values. Which district has the largest number of missing values? What do you notice about schools that have a lot of missing values?
+```{r}
+districts$na_count <- apply(is.na(districts), 1, sum)
+filter(districts, districts$na_count == max(districts$na_count))
+filter(districts, districts$na_count >= 9)
+ggplot(districts, aes(na_count)) +  geom_bar()
+```
+
 
 19. Find the correlation between graduation rate and all other variables. Create a horizontal bar chart showing these correlations. Make sure that your plot is ordered by correlation values. What do you notice from these correlations?
+```{r}
+d_no_na <- districts %>% na.omit()
+d_matrix <- data.matrix(d_no_na[3:27])
+cor_df <- data.frame(cor(d_matrix[,23], d_matrix[, -c(23)]))
+cor_df <- data.frame(name = colnames(cor_df), value = as.numeric(as.vector(cor_df[1,])))
+ggplot(cor_df, aes(name)) +  geom_bar()
+cor_df
+```
+```{r}
+ggplot(cor_df, aes(x = reorder(name, -value), y = value)) +   
+  geom_bar(stat = "identity") +
+  coord_flip()
+```
+
 
 20. Create a scatterplot for `grad` vs. `suspended`. Does what you see make sense given your answer from the previous part?
+```{r}
+ggplot(data = districts, aes(grad, suspended)) +
+  geom_point() 
+```
+
 
 21. Create a linear regression model using `lm` with target variable `grad` and predictor variable `suspended`. What R^2 value does this model have? What is the interpretation of this number?
+```{r}
+
+```
+
 
 22. Add the regression line to your scatterplot using `geom_smooth` with `method='lm'`. How do you feel about the regression line after seeing it plotted on the scatterplot?
 
