@@ -1,6 +1,8 @@
 ---
 title: "R Notebook"
 output: html_notebook
+editor_options: 
+  chunk_output_type: console
 ---
 
 ```{r}
@@ -34,44 +36,54 @@ filter(districts, alg_1 < 50 | eng_1 < 50) %>% count()
 5. Which district has the lowest graduation rate?
 Tenn School for Blind
 ```{r}
-districts %>% summarize(minGrad = min(grad), minGradDistrict = system_name[which.min(grad)])
+districts %>% 
+  summarize(system_name[which.min(grad)])
 ```
 
 6. Which district has the highest dropout rate?
 Achievement School District
 ```{r}
-districts %>% summarize(maxDropout = max(dropout), maxDropoutDistrict = system_name[which.max(dropout)])
+districts %>% summarize(system_name[which.max(dropout)])
 ```
 
 7. Within the Mid Cumberland region, which district has the highest ACT composite?
 Williamson County
 ```{r}
 filter(districts, region == "Mid Cumberland") %>% 
-    summarize(maxValue = max(act_composite, na.rm = TRUE), maxName = system_name[which.max(act_composite)])
+    summarize(system_name[which.max(act_composite)])
 ```
 
 8. Create a histogram showing the distribution of graduation rates. What can you say about this distribution?
 The distribution is very right skewed. Almost 80 districts have a 90% or higher graduation rate. Roughly 
-50 districts have a 80 percent or higher graduation rate. Approximately 10 districts have less than an 80 percent
-graduation rate. Only one district has a less than 20 percent graduation rate.
+50 districts have a 80 percent or higher graduation rate. Approximately 10 districts have less than an 
+80 percent graduation rate. Only one district has a less than 20 percent graduation rate.
 ```{r}
 hist(districts$grad)
 ```
 
 
 9. Create a scatter plot to compare alg_1 proficiency rates to alg_2 rates. What do you notice? Facet this plot by region. Does anything stand out when you facet the plots?
+There appears to be a positive correlation between the scores for alg_1 and alg_2.
+Some schools have a very narrow range of variance relative to others.
+
+
 ```{r}
-plot(districts$alg_1, districts$alg_2)
+ggplot(districts, aes(x = alg_1, y = alg_2)) +
+  geom_point()
 ```
+
 
 ```{r}
 ggplot(data = districts, aes(alg_1, alg_2)) +
   geom_point() +
   # labs( y = "Rating", x = "Percent") + 
-  facet_grid( ~ region )
+  facet_grid( ~ region) 
+  # facet_grid(rows = vars(region)) 
 ```
 
 10. Create a bar chart showing the total enrollment by region. Which region has the highest total enrollment? Which has the smallest?
+Highest enrollment: Mid Cumberland
+Smallest enrollment: Northwest
 ```{r}
 ggplot(districts, aes(region)) +
   geom_bar(aes(weight = enrollment)) + 
@@ -87,6 +99,8 @@ filter(districts, is.na(districts$enrollment)) %>% count()
 
 12. What is the mean graduation rate across all districts? What might be wrong with using just the regular mean to assess average graduation rates?
 90%
+The districts do not have the same number of students so some schools get a higher weight for the 
+graduation rate.
 ```{r}
 mean(districts$grad, na.rm = TRUE)
 ```
