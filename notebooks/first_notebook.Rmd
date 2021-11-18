@@ -26,6 +26,11 @@ districts <- slice(districts,(2:n()))
 ```{r}
 filter(districts, alg_1 >= 80 & eng_1 >= 80) %>% count()
 ```
+or
+```{r}
+count(districts, alg_1 >= 80 & eng_1 >= 80)
+```
+
 
 4. How many districts have a proficiency rate less than 50% for either alg_1 or eng_1?
 8
@@ -58,7 +63,8 @@ The distribution is very right skewed. Almost 80 districts have a 90% or higher 
 50 districts have a 80 percent or higher graduation rate. Approximately 10 districts have less than an 
 80 percent graduation rate. Only one district has a less than 20 percent graduation rate.
 ```{r}
-hist(districts$grad)
+ggplot(districts, aes(x = grad)) +
+  geom_histogram()
 ```
 
 
