@@ -120,6 +120,9 @@ weighted.mean(enroll_grad$grad, enroll_grad$enrollment)
 
 
 14. Create a boxplot showing enrollment rates per region. Does anything stand out?
+Mid Cumberland has a much larger enrollment than any other region, 
+Northwest a much lower enrollment that the other regions.
+
 ```{r}
 ggplot(districts, aes(region, enrollment)) +
   geom_boxplot() +
@@ -128,6 +131,9 @@ ggplot(districts, aes(region, enrollment)) +
 
 
 15. Create a boxplot showing graduation rates per region. Does anything stand out?
+Southwest/Memphis has the greatest range of graduation rates. Mid Cumberland has the lowest
+overall graduation for one of its districts.
+
 ```{r}
 ggplot(districts, aes(region, grad)) +
   geom_boxplot() +
@@ -136,6 +142,10 @@ ggplot(districts, aes(region, grad)) +
 
 
 16. Find the weighted average of graduation rates by region using enrollment as weights. Compare the results you get for the weighted average to what you see from the boxplots. Can you explain any discrepancy?
+weighted average to what you see from the boxplots. Can you explain any discrepancy?
+Southwest/Memphis has a much lower weighted graduation average than what shows in the box plot. This is probably
+due to there being many more enrolled in the other districts that have a higher graduation rate.
+
 ```{r}
 enroll_region_grad <- districts %>% select(enrollment, region, grad) %>% na.omit()
 enroll_region_grad %>% 
@@ -145,6 +155,12 @@ enroll_region_grad %>%
 
 
 17. For many districts, values for `alg_2` are lower than for `alg_1`. Create a histogram showing the distribution of differences (`alg_1` - `alg_2`). Which school had the largest drop from `alg_1` to `alg_2`? For what percentage of schools is it true that `alg_2` is larger than `alg_1`? Is there a similar dropoff for `eng_2` and `eng_3`?
+Pickett County had the largest drop from alg_1 to alg_2.
+For 15.4% of the schools alg_2 is larger than alg_1.
+The shape of the curve for the histogram for the eng_2/eng_3 difference is much narrower and centered around the 20 percent
+value.
+The percent of districts with eng_3 greater than eng_2 is 0.8%.
+
 ```{r}
 q17 <- function(col1, col2) {
   data <- districts %>% select(all_of("system_name"), all_of(col1), all_of(col2)) %>% 
@@ -164,6 +180,9 @@ q17("eng_2", "eng_3")
 
 
 18. You may have noticed that a lot of rows are missing values. Which district has the largest number of missing values? What do you notice about schools that have a lot of missing values?
+West Tenn School for Deaf
+Schools with a large number of missing values are for the most part all missing values for eng_2, eng_3, alg_2, bio, and chem.
+
 ```{r}
 districts$na_count <- apply(is.na(districts), 1, sum)
 filter(districts, districts$na_count == max(districts$na_count))
@@ -173,6 +192,9 @@ ggplot(districts, aes(na_count)) +  geom_bar()
 
 
 19. Find the correlation between graduation rate and all other variables. Create a horizontal bar chart showing these correlations. Make sure that your plot is ordered by correlation values. What do you notice from these correlations?
+The largest correlation rate is between dropout and graduation. Other variable have a smooth transition from a negative
+correlation to a positive correlation but all correlation falling within the +/- .5 value.
+
 ```{r}
 d_no_na <- districts %>% na.omit()
 d_matrix <- data.matrix(d_no_na[3:27])
@@ -189,6 +211,8 @@ ggplot(cor_df, aes(x = reorder(name, -value), y = value)) +
 
 
 20. Create a scatterplot for `grad` vs. `suspended`. Does what you see make sense given your answer from the previous part?
+This does make sense given the correlation values seen previously. There is a correlation abeit a weak one.
+
 ```{r}
 ggplot(data = districts, aes(grad, suspended)) +
   geom_point() 
@@ -253,14 +277,18 @@ merge(alg_below, eng_below, by.x = "school_name", by.y = "school_name") %>% coun
 ```
 
 26. Which grade has the highest pct_adv for Algebra I? Plot the average pct_adv per grade level as a bar chart. Make sure that the bars are ordered by grade level.
+8th grade has the highest pct_adv for Algebra I.
 
 ```{r}
-base %>% filter(grade != "All Grades" & subject == "Algebra I") %>% 
-  group_by(grade) %>% summarise(a_mean = mean(as.numeric(pct_adv), na.rm = TRUE))
+alg_adv <- base %>% filter(grade %in% (8:12) & subject == "Algebra I") %>% 
+  group_by(grade) %>% summarise(value = mean(as.numeric(pct_adv), na.rm = TRUE))
+alg_adv <- transform(alg_adv, grade = as.numeric(grade))
 ```
-```{r}
-?mean
 
+```{r}
+alg_adv %>%
+  ggplot(aes(x = grade, value, y = value)) +   
+    geom_bar(stat = "identity")
 ```
 
 
