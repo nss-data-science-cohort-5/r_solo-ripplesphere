@@ -351,7 +351,7 @@ alg_inner %>%
 ```{r}
 rutherford_hs <- base %>%  
   filter(system_name == "Rutherford County" & grepl("High School", school_name) &
-           grade %in% (8:12) ) %>%
+           grade %in% (9:12) ) %>%
     mutate(pct_below_bsc = as.numeric(pct_below_bsc), pct_bsc = as.numeric(pct_bsc), 
            pct_prof = as.numeric(pct_prof), pct_adv = as.numeric(pct_adv),
            grade = as.numeric(grade)) 
@@ -371,10 +371,41 @@ rutherford_hs %>%
 
 
 29. I claim that smaller schools do a better job preparing students for Algebra I standardized tests. Find the average number of valid tests (a proxy for the school size) for schools where the pct_prof_adv for Algebra I is greater than 95. Compare this to the average number of valid tests for all schools. In light of this result, how does my claim look?
+From the comparison of average number of tests where the pct_prof_adv is above 95, which is 48.4, and the average number of tests overall, 130.0, a smaller the better tests scores do indeed seem to be in smaller schools.
+
+```{r}
+base %>%
+  filter(subject == "Algebra I", pct_prof_adv > 95, grade == "All Grades", subgroup == "All Students") %>%
+  pull(valid_tests) %>% mean()
+base %>%
+  filter(subject == "Algebra I", grade == "All Grades", subgroup == "All Students") %>%
+  pull(valid_tests) %>% mean()  
+```
+
 
 30. I also claim that smaller schools do a worse job preparing students for Algebra I standardized tests. Find the average number of valid tests (a proxy for the school size) for schools where the pct_prof_adv for Algebra I is less than 25. Compare this to the average number of valid tests for all schools. In light of this result, how does my claim look now?
+From the average number of tests for pct_prof_adv below 25, which is 62.1, compared to the average test number for all schools, which is 130.0, smaller schools do indeed seem to do worse at preparing students for the Algebra I standardized tests.
+
+```{r}
+base %>%
+  filter(subject == "Algebra I", pct_prof_adv < 25, grade == "All Grades", subgroup == "All Students") %>%
+  pull(valid_tests) %>% mean()
+base %>%
+  filter(subject == "Algebra I", grade == "All Grades", subgroup == "All Students") %>%
+  pull(valid_tests) %>% mean()
+```
+
 
 31. Create a scatterplot showing pct_prov_adv vs. valid_tests. Can you use this to explain the result for numbers 26 and 27?
+The lower and higher side of the pct_prof_adv scale are lower on the valid_schools scale. 
+
+```{r}
+base %>%
+  filter(subject == "Algebra I", grade == "All Grades", subgroup == "All Students") %>%
+  ggplot() +
+  geom_point( aes(x = pct_prof_adv, y = valid_tests))
+```
+
 
 If you finish all of the above questions, continue to explore the two datasets and see what else interesting you can find.
 
